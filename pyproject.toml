@@ -19,6 +19,7 @@ dynamic = ["version"]
 dependencies = [
   "six>=1.16",
   "ply>=3.11",
+  "numpy>=1.20",
 ]
 
 [tool.setuptools]

@@ -33,6 +33,22 @@ class FoamFileGenerator(object):
     def __str__(self):
         return self.makeString()
 
+    def _normalize_numpy(self, value):
+        try:
+            import numpy as np
+        except ImportError:
+            return value
+
+        if isinstance(value, np.ndarray):
+            if value.ndim == 0:
+                return value.item()
+            if value.size == 1:
+                return value.reshape(-1)[0].item()
+            return value.tolist()
+        if isinstance(value, np.generic):
+            return value.item()
+        return value
+
     def __quoteString(self,val):
         """Quote the string if it contains illegal characters"""
         if len(val)==0:
@@ -72,6 +88,7 @@ class FoamFileGenerator(object):
         return result
 
     def strPrimitive(self,pri):
+        pri = self._normalize_numpy(pri)
         if type(pri)==bool:
             if pri:
                 return "yes"
@@ -125,6 +142,7 @@ class FoamFileGenerator(object):
             if str(k).find("anonymValue")==0:
                 k=""
 
+            v = self._normalize_numpy(v)
             s+=(" "*indent)+str(k)
             if isinstance(v,string_types):
                 if type(v)==Codestream:
@@ -202,6 +220,7 @@ class FoamFileGenerator(object):
                     s+=(" "*indent)+str(theLen)+"\n"
             s+=(" "*indent)+"(\n"
             for v in lst:
+                v = self._normalize_numpy(v)
                 if isinstance(v,string_types):
                     s+=(" "*(indent+2))+v+"\n"
                 elif type(v) in [dict,DictProxy]:
