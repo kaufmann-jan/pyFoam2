@@ -68,6 +68,13 @@ class FoamFileGenerator(object):
         else:
             return val
 
+    def _list_is_compact(self, lst):
+        for v in lst:
+            v = self._normalize_numpy(v)
+            if isinstance(v, (dict, DictProxy, OrderedDict, list, UnparsedList, BinaryList, tuple, TupleProxy)):
+                return False
+        return True
+
     def makeString(self,firstLevel=False):
         """turns the data into a string"""
         result=""
@@ -129,11 +136,11 @@ class FoamFileGenerator(object):
             if type(dic)==DictProxy:
                 end=dic.getDecoration(k)+"\n"
 
-            if firstLevel:
-                end+="\n"
-
             # remove trailing spaces
             end="\n".join([part.rstrip() for part in end.split("\n")])
+
+            if firstLevel:
+                end=end.rstrip("\n") + "\n\n"
 
             if type(k)==int:
                 s+=v
@@ -157,18 +164,21 @@ class FoamFileGenerator(object):
                 s+=self.strDict(v,indent+2)
                 s+=(" "*indent)+"}"+end
             elif type(v) in [list,UnparsedList]:
-                s+="\n"
-                s+=self.strList(v,indent+2)
-                if s[-1]=="\n":
-                    s=s[:-1]
-                s+=";"+end
+                if self._list_is_compact(v):
+                    s+=" "+self.strList(v,indent+2,compact=True)+";"+end
+                else:
+                    s+="\n"
+                    s+=self.strList(v,indent+2)
+                    if s[-1]=="\n":
+                        s=s[:-1]
+                    s+=";"+end
             elif isinstance(v,(tuple,TupleProxy)):
                 s+=" "+self.strTuple(v,indent+2)+";"+end
             elif type(v) in [bool,BoolProxy]:
                 if v:
-                    s+=" yes;\n"
+                    s+=" yes;"+end
                 else:
-                    s+=" no;\n"
+                    s+=" no;"+end
             elif isinstance(v,integer_types+(float,)):
                 s+=" "+str(v)+";"+end
             elif v.__class__ in self.primitiveTypes:
@@ -181,7 +191,7 @@ class FoamFileGenerator(object):
                 error("Unhandled type",type(v)," for",v)
         return s
 
-    def strList(self,lst,indent=0):
+    def strList(self,lst,indent=0,compact=False):
         s=""
 
         if type(lst)==UnparsedList:
@@ -215,6 +225,9 @@ class FoamFileGenerator(object):
         if isFixedType:
             s+="("+" ".join(["%g"%v for v in lst])+")"
         else:
+            if compact and self._list_is_compact(lst):
+                s+="(" + " ".join([str(self._normalize_numpy(v)) for v in lst]) + ")"
+                return s
             if self.longListThreshold:
                 if theLen>self.longListThreshold:
                     s+=(" "*indent)+str(theLen)+"\n"
