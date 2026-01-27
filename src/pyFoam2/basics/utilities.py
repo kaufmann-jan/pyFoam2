@@ -3,7 +3,7 @@
 Can be used via a class or as functions"""
 
 import sys
-from pyFoam2.third_party.six import print_
+from six import print_
 from pyFoam2.error import warning,error
 import subprocess
 import os,fnmatch

@@ -16,7 +16,7 @@ from binascii import hexlify, unhexlify
 import binascii
 import sys
 
-from pyFoam2.third_party.six import print_,PY3,binary_type,u
+from six import print_,PY3,binary_type,u
 if PY3:
     range_func = range
 else:

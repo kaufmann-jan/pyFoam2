@@ -1,6 +1,6 @@
 """Writes Logfiles"""
 
-from pyFoam2.third_party.six import print_
+from six import print_
 
 try:
     import logging

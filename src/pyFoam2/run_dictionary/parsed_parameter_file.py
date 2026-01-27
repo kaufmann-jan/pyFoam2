@@ -12,7 +12,7 @@ from os import path
 from copy import deepcopy
 import sys
 
-from pyFoam2.third_party.six import print_,integer_types,iteritems,string_types
+from six import print_,integer_types,iteritems,string_types
 
 class ParsedParameterFile(FileBasisBackup):
     """ Parameterfile whose complete representation is read into

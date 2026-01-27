@@ -8,8 +8,8 @@ from pyFoam2.error import PyFoamException
 if sys.version_info < (2,3):
     raise PyFoamException("Version "+str(sys.version_info)+" is not sufficient for ply (2.3 needed)")
 
-import pyFoam2.third_party.ply.lex as lex
-import pyFoam2.third_party.ply.yacc as yacc
+import ply.lex as lex
+import ply.yacc as yacc
 
 import os
 

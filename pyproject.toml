@@ -16,6 +16,10 @@ classifiers = [
   "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
 ]
 dynamic = ["version"]
+dependencies = [
+  "six>=1.16",
+  "ply>=3.11",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -33,3 +37,6 @@ testpaths = ["tests"]
 
 [project.scripts]
 pyFoam2 = "pyFoam2.cli:main"
+
+[project.optional-dependencies]
+numpy = ["numpy>=1.20"]

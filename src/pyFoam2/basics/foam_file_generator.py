@@ -3,7 +3,7 @@
 from pyFoam2.error import error,PyFoamException
 from pyFoam2.basics.data_structures import Vector,Field,Dimension,TupleProxy,DictProxy,Tensor,SymmTensor,Unparsed,UnparsedList,Codestream,DictRedirection,BinaryList,BoolProxy
 
-from pyFoam2.third_party.six import string_types,integer_types
+from six import string_types,integer_types
 from collections import OrderedDict
 
 class FoamFileGenerator(object):

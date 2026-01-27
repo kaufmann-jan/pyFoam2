@@ -13,7 +13,7 @@ from pyFoam2.basics.line_reader import LineReader
 
 from pyFoam2.error import warning,error
 
-from pyFoam2.third_party.six import PY3
+from six import PY3
 
 class FileBasis(Utilities):
     """ Base class for the other OpenFOAM--file-classes"""

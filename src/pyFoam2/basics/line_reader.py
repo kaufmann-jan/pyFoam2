@@ -1,11 +1,11 @@
 """Read a file line by line"""
 
 from pyFoam2.infrastructure.logging import foamLogger
-from pyFoam2.third_party.six import print_
+from six import print_
 
 import sys
 
-from pyFoam2.third_party.six import PY3
+from six import PY3
 
 class LineReader(object):
     """Read a line from a file

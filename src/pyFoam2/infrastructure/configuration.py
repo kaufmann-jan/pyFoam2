@@ -2,7 +2,7 @@
 
 Also hardcodes defaults for the settings"""
 
-from pyFoam2.third_party.six import iteritems,moves,PY3
+from six import iteritems,moves,PY3
 
 configparser = moves.configparser
 

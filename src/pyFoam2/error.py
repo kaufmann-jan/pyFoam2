@@ -4,7 +4,7 @@ import traceback
 import sys
 
 from pyFoam2.basics.terminal_formatter import TerminalFormatter
-from pyFoam2.third_party.six import print_
+from six import print_
 
 defaultFormat=TerminalFormatter()
 defaultFormat.getConfigFormat("error")

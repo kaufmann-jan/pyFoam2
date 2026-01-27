@@ -1,7 +1,7 @@
 """Hardcoded values"""
 
 from os import path,makedirs,environ
-from pyFoam2.third_party.six import PY3
+from six import PY3
 
 _pyFoamDirName="pyFoam"
 
