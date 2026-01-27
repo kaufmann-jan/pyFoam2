@@ -71,7 +71,29 @@ class FoamFileGenerator(object):
     def _list_is_compact(self, lst):
         for v in lst:
             v = self._normalize_numpy(v)
+            if isinstance(v, (dict, DictProxy, OrderedDict)):
+                return False
+            if isinstance(v, (list, UnparsedList, BinaryList)) and not self._flat_list_is_compact(v):
+                return False
+            if isinstance(v, (tuple, TupleProxy)) and not self._tuple_is_compact(v):
+                return False
+        return True
+
+    def _flat_list_is_compact(self, lst):
+        for v in lst:
+            v = self._normalize_numpy(v)
             if isinstance(v, (dict, DictProxy, OrderedDict, list, UnparsedList, BinaryList, tuple, TupleProxy)):
+                return False
+            if not isinstance(v, (string_types, integer_types+(float,), bool, BoolProxy)) and v.__class__ not in self.primitiveTypes:
+                return False
+        return True
+
+    def _tuple_is_compact(self, tpl):
+        for v in tpl:
+            v = self._normalize_numpy(v)
+            if isinstance(v, (dict, DictProxy, OrderedDict, list, UnparsedList, BinaryList, tuple, TupleProxy)):
+                return False
+            if not isinstance(v, (string_types, integer_types+(float,), bool, BoolProxy)) and v.__class__ not in self.primitiveTypes:
                 return False
         return True
 
@@ -143,7 +165,15 @@ class FoamFileGenerator(object):
                 end=end.rstrip("\n") + "\n\n"
 
             if type(k)==int:
-                s+=v
+                if isinstance(v, string_types):
+                    indent_str = " " * indent
+                    lines = v.splitlines(True)
+                    s += "".join(
+                        (indent_str + line) if line.strip() else line
+                        for line in lines
+                    )
+                else:
+                    s+=v
                 continue
 
             if str(k).find("anonymValue")==0:
@@ -165,7 +195,8 @@ class FoamFileGenerator(object):
                 s+=(" "*indent)+"}"+end
             elif type(v) in [list,UnparsedList]:
                 if self._list_is_compact(v):
-                    s+=" "+self.strList(v,indent+4,compact=True)+";"+end
+                    list_str=self.strList(v,indent+4,compact=True).rstrip()
+                    s+=" "+list_str+";"+end
                 else:
                     s+="\n"
                     s+=self.strList(v,indent)
@@ -173,7 +204,8 @@ class FoamFileGenerator(object):
                         s=s[:-1]
                     s+=";"+end
             elif isinstance(v,(tuple,TupleProxy)):
-                s+=" "+self.strTuple(v,compact=True)+";"+end
+                tuple_str=self.strTuple(v,compact=True).rstrip()
+                s+=" "+tuple_str+";"+end
             elif type(v) in [bool,BoolProxy]:
                 if v:
                     s+=" yes;"+end
@@ -226,7 +258,16 @@ class FoamFileGenerator(object):
             s+="("+" ".join(["%g"%v for v in lst])+")"
         else:
             if compact and self._list_is_compact(lst):
-                s+="(" + " ".join([str(self._normalize_numpy(v)) for v in lst]) + ")"
+                parts=[]
+                for v in lst:
+                    v = self._normalize_numpy(v)
+                    if isinstance(v, (tuple, TupleProxy)):
+                        parts.append("( " + " ".join([str(self._normalize_numpy(t)) for t in v]) + ")")
+                    elif isinstance(v, (list, UnparsedList, BinaryList)):
+                        parts.append("( " + " ".join([str(self._normalize_numpy(t)) for t in v]) + ")")
+                    else:
+                        parts.append(str(v))
+                s+="(" + " ".join(parts) + ")"
                 return s
             if self.longListThreshold:
                 if theLen>self.longListThreshold:

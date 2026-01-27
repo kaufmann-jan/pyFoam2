@@ -33,7 +33,12 @@ def _openfoam_header():
 
 class ParsedParameterFile(FileBasisBackup):
     """ Parameterfile whose complete representation is read into
-    memory, can be manipulated and afterwards written to disk"""
+    memory, can be manipulated and afterwards written to disk.
+
+    Write to disk with:
+        - self.writeFile()       # writes to the original file name
+        - self.writeFileAs(path) # writes to a new path
+    """
 
     def __init__(self,
                  name,
@@ -817,6 +822,23 @@ class FoamFileParser(PlyParser):
 
         p[0] = p[1] + " " + p[2]
 
+    def p_include_in_list(self,p):
+        '''include_in_list : KANALGITTER INCLUDE SCONST
+                           | KANALGITTER INCLUDE_ETC SCONST
+                           | KANALGITTER INCLUDE_FUNC NAME
+                           | KANALGITTER INCLUDE_FUNC SCONST
+                           | KANALGITTER INCLUDEIFPRESENT SCONST
+                           | INCLUDE SCONST
+                           | INCLUDE_ETC SCONST
+                           | INCLUDE_FUNC NAME
+                           | INCLUDE_FUNC SCONST
+                           | INCLUDEIFPRESENT SCONST'''
+        # Keep include directives inside lists as-is so list parsing can proceed.
+        if p[1] == '#':
+            p[0] = p[1] + p[2] + " " + p[3]
+        else:
+            p[0] = p[1] + " " + p[2]
+
     def p_inputMode(self,p):
         '''inputMode : INPUTMODE ignore_rest_of_line ERROR
                      | INPUTMODE ignore_rest_of_line WARN
@@ -1258,7 +1280,8 @@ class FoamFileParser(PlyParser):
                 | prelist
                 | list
                 | uniformfield
-                | dictionary'''
+                | dictionary
+                | include_in_list'''
         p[0] = p[1]
 
     def p_empty(self,p):
