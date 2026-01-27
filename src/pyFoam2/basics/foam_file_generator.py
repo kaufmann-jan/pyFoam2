@@ -79,7 +79,7 @@ class FoamFileGenerator(object):
         """turns the data into a string"""
         result=""
         if self.header:
-            result+="FoamFile\n{\n"+self.strDict(self.header,indent=1)+"}\n\n"
+            result+="FoamFile\n{\n"+self.strDict(self.header,indent=4)+"}\n\n"
 
         if type(self.data) in [dict,DictProxy,OrderedDict]:
             result+=self.strDict(self.data,firstLevel=firstLevel)
@@ -161,19 +161,19 @@ class FoamFileGenerator(object):
                     s+=" "+self.__quoteString(v)+";"+end
             elif type(v) in [dict,DictProxy,OrderedDict]:
                 s+="\n"+(" "*indent)+"{\n"
-                s+=self.strDict(v,indent+2)
+                s+=self.strDict(v,indent+4)
                 s+=(" "*indent)+"}"+end
             elif type(v) in [list,UnparsedList]:
                 if self._list_is_compact(v):
-                    s+=" "+self.strList(v,indent+2,compact=True)+";"+end
+                    s+=" "+self.strList(v,indent+4,compact=True)+";"+end
                 else:
                     s+="\n"
-                    s+=self.strList(v,indent+2)
+                    s+=self.strList(v,indent)
                     if s[-1]=="\n":
                         s=s[:-1]
                     s+=";"+end
             elif isinstance(v,(tuple,TupleProxy)):
-                s+=" "+self.strTuple(v,indent+2)+";"+end
+                s+=" "+self.strTuple(v,compact=True)+";"+end
             elif type(v) in [bool,BoolProxy]:
                 if v:
                     s+=" yes;"+end
@@ -235,38 +235,49 @@ class FoamFileGenerator(object):
             for v in lst:
                 v = self._normalize_numpy(v)
                 if isinstance(v,string_types):
-                    s+=(" "*(indent+2))+v+"\n"
+                    s+=(" "*(indent+4))+v+"\n"
                 elif type(v) in [dict,DictProxy]:
-                    s+="\n"+(" "*(indent+2))+"{\n"
-                    s+=self.strDict(v,indent+4)
-                    s+="\n"+(" "*(indent+2))+"}\n"
+                    s+=(" "*(indent+4))+"{\n"
+                    s+=self.strDict(v,indent+8)
+                    s+=(" "*(indent+4))+"}\n"
                 elif type(v) in [list,UnparsedList]:
                     s+="\n"
-                    s+=self.strList(v,indent+2)
+                    s+=self.strList(v,indent+4)
                 elif type(v)==tuple:
-                    s+=" "+self.strTuple(v,indent+2)+" "
+                    s+=(" "*(indent+4))+self.strTuple(v,compact=True)+"\n"
                 else:
-                    s+=(" "*(indent+2))+str(v)+"\n"
+                    s+=(" "*(indent+4))+str(v)+"\n"
 
             s+=(" "*indent)+")\n"
 
         return s
 
-    def strTuple(self,lst,indent=0):
+    def strTuple(self,lst,indent=0,compact=False):
         s=""
 
         for v in lst:
             if isinstance(v,string_types):
                 s+=v+" "
             elif type(v) in [dict,DictProxy]:
-                s+="{\n"
-                s+=self.strDict(v,indent+4)
-                s+=(" "*(indent+2))+"} "
+                if compact:
+                    s+="{ "
+                    s+=self.strDict(v,indent+4).rstrip()
+                    s+=" } "
+                else:
+                    s+="{\n"
+                    s+=self.strDict(v,indent+8)
+                    s+=(" "*(indent+4))+"} "
             elif type(v) in [list,UnparsedList]:
-                s+=" "
-                s+=self.strList(v,indent+2)
+                if compact:
+                    s+=self.strList(v,indent+4,compact=True)+" "
+                else:
+                    s+=" "
+                    s+=self.strList(v,indent+4)
             else:
-                s+=(" "*(indent+2))+str(v)+" "
+                if compact:
+                    s+=str(v)+" "
+                else:
+                    s+=(" "*(indent+4))+str(v)+" "
 
         return s
 
