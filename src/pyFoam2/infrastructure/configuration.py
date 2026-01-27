@@ -45,9 +45,9 @@ _defaults={
     },
     "OpenFOAM": {
         "Forks" : 'openfoam,extend,openfoamplus',
-        "DirPatterns-openfoam" : '"^OpenFOAM-(([0-9]\.([0-9]|x)|dev).*)$","^OpenFOAM-([0-9]+)$","^openfoam([0-9]+)$"',
-        "DirPatterns-extend" : '"^foam-extend-([0-9]\.[0-9].*)$"',
-        "DirPatterns-openfoamplus" : '"^OpenFOAM-((v[0-9]\.[0-9]\+|plus|v[123][0-9]+(\+|)).*)$"',
+        "DirPatterns-openfoam" : r'"^OpenFOAM-(([0-9]\.([0-9]|x)|dev).*)$","^OpenFOAM-([0-9]+)$","^openfoam([0-9]+)$"',
+        "DirPatterns-extend" : r'"^foam-extend-([0-9]\.[0-9].*)$"',
+        "DirPatterns-openfoamplus" : r'"^OpenFOAM-((v[0-9]\.[0-9]\+|plus|v[123][0-9]+(\+|)).*)$"',
         "Installation-openfoam" : "~/OpenFOAM",
         "Installation-openfoamplus" : "~/OpenFOAM",
         "Installation-extend" : "~/foam",
@@ -691,7 +691,7 @@ class Configuration(configparser.ConfigParser):
         :param section: the section
         :param option: the option
         :param default: if set and the option is not found, then this value is used"""
-        floatRegExp="[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?"
+        floatRegExp=r"[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?"
 
         return re.compile(self.get(section,option).replace("%f%",floatRegExp))
 
