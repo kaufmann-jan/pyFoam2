@@ -7,12 +7,29 @@ from pyFoam2.basics.foam_file_generator import FoamFileGenerator
 from pyFoam2.basics.data_structures import Vector,Field,Dimension,DictProxy,TupleProxy,Tensor,SymmTensor,Unparsed,UnparsedList,Codestream,DictRedirection,BinaryBlob,BinaryList,BoolProxy
 
 from pyFoam2.error import error,warning,FatalErrorPyFoamException
+from pyFoam2.foam_information import foamVersionString
 
 from os import path
 from copy import deepcopy
 import sys
 
 from six import print_,integer_types,iteritems,string_types
+
+
+def _openfoam_header():
+    version = foamVersionString()
+    if not version:
+        version = "dev"
+
+    return (
+        "/*--------------------------------*- C++ -*----------------------------------*\\\n"
+        "  =========                 |\n"
+        "  \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox\n"
+        "   \\\\    /   O peration     | Website:  https://openfoam.org\n"
+        f"    \\\\  /    A nd           | Version:  {version}\n"
+        "     \\\\/     M anipulation  |\n"
+        "\\*---------------------------------------------------------------------------*/\n\n"
+    )
 
 class ParsedParameterFile(FileBasisBackup):
     """ Parameterfile whose complete representation is read into
@@ -153,15 +170,7 @@ class ParsedParameterFile(FileBasisBackup):
         """Generates a string from the contents in memory
         Used to be called makeString"""
 
-        string=(
-            "/*--------------------------------*- C++ -*----------------------------------*\\\n"
-            "  =========                 |\n"
-            "  \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox\n"
-            "   \\\\    /   O peration     | Website:  https://openfoam.org\n"
-            "    \\\\  /    A nd           | Version:  dev\n"
-            "     \\\\/     M anipulation  |\n"
-            "\\*---------------------------------------------------------------------------*/\n\n"
-        )
+        string=_openfoam_header()
 
         generator=FoamFileGenerator(self.content,
                                     header=self.header if not self.noHeader else None,
@@ -1348,15 +1357,7 @@ class ParsedBoundaryDict(ParsedParameterFile):
         return self.content
 
     def __str__(self):
-        string=(
-            "/*--------------------------------*- C++ -*----------------------------------*\\\n"
-            "  =========                 |\n"
-            "  \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox\n"
-            "   \\\\    /   O peration     | Website:  https://openfoam.org\n"
-            "    \\\\  /    A nd           | Version:  dev\n"
-            "     \\\\/     M anipulation  |\n"
-            "\\*---------------------------------------------------------------------------*/\n\n"
-        )
+        string=_openfoam_header()
         temp=[]
         for k,v in iteritems(self.content):
             temp.append((k,v))
