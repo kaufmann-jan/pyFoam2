@@ -37,12 +37,14 @@ class PlyParser(object):
 
         # Build the lexer and parser
         lex.lex(module=self, debug=self.debug)
+        errorlog = yacc.NullLogger()
         yacc.yacc(module=self,
                   debug=self.debug,
                   debugfile=self.debugfile,
                   tabmodule=self.tabmodule,
                   outputdir=getUserTempDir(),
-                  check_recursion=self.debug)
+                  check_recursion=self.debug,
+                  errorlog=errorlog)
         self.lex=lex
         self.yacc=yacc
 
