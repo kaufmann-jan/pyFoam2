@@ -22,3 +22,4 @@ coverage.xml
 # IDE
 .vscode/
 .idea/
+.settings/
