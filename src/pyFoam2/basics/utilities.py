@@ -3,15 +3,11 @@
 Can be used via a class or as functions"""
 
 import sys
-from six import print_
 from pyFoam2.error import warning,error
 import subprocess
 import os,fnmatch
 
-if sys.version_info<(2,6):
-    from popen2 import popen4
-else:
-    from subprocess import Popen,PIPE,STDOUT
+from subprocess import Popen,PIPE,STDOUT
 from os import listdir,path,remove as removeFile
 
 import re
@@ -19,7 +15,6 @@ import re
 try:
     import shutil
 except ImportError:
-    # this is an old python-version without it. We'll try to work around it
     pass
 
 class Utilities(object):
@@ -43,7 +38,7 @@ class Utilities(object):
         Currently no error-handling is done
         :return: A list with all the output-lines of the execution"""
         if debug:
-            print_(cmd)
+            print(cmd)
 
         oldDir=None
         if workdir:
@@ -61,19 +56,16 @@ class Utilities(object):
             if not os.access(fpath, os.X_OK):
                 error("The script file",fpath,"is not executable")
 
-        if sys.version_info<(2,6):
-            raus,rein = popen4(cmd)
-        else:
-            p = Popen(cmd, shell=True,
-                      stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True,
-                      universal_newlines=True)
-            (rein,raus)=(p.stdin,p.stdout)
+        p = Popen(cmd, shell=True,
+                  stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True,
+                  universal_newlines=True)
+        (rein,raus)=(p.stdin,p.stdout)
         if (echo is not None) or (outfile is not None):
             tmp=[]
             while p.poll()==None:
                 l=raus.readline()
                 if echo is not None:
-                    print_(echo,l,end="")
+                    print(echo,l,end="")
                 if outfile is not None:
                     outfile.write(l)
                 else:
@@ -99,8 +91,7 @@ class Utilities(object):
             removeFile(f)
 
     def rmtree(self,dst,ignore_errors=False):
-        """Encapsulates the shutil rmtree and provides an alternative for
-        old Python-version"""
+        """Encapsulates the shutil rmtree and provides a fallback."""
         try:
             if path.isdir(dst):
                 shutil.rmtree(dst,ignore_errors=ignore_errors)
@@ -111,8 +102,7 @@ class Utilities(object):
 
     def copytree(self,src,dst,
                  symlinks=False,force=False):
-        """Encapsulates the shutil copytree and provides an alternative for
-        old Python-version"""
+        """Encapsulates the shutil copytree and provides a fallback."""
         if force and path.exists(dst):
             if path.isdir(dst):
                 self.rmtree(dst)
@@ -136,8 +126,7 @@ class Utilities(object):
             self.execute("cp "+cpOptions+" "+src+" "+dst)
 
     def copyfile(self,src,dst):
-        """Encapsulates the shutil copyfile and provides an alternative for
-        old Python-version"""
+        """Encapsulates the shutil copyfile and provides a fallback."""
         try:
             if path.isdir(dst):
                 dst=path.join(dst,path.basename(path.abspath(src)))
@@ -369,5 +358,3 @@ def copyfile(src,dest):
 def find(pattern,path,directoriesToo=True):
     """Calls the method of the same name from the Utilites class"""
     return Utilities().find(pattern,path,directoriesToo=directoriesToo)
-
-# Should work with Python3 and Python2

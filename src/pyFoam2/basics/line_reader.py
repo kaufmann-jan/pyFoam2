@@ -1,11 +1,9 @@
 """Read a file line by line"""
 
 from pyFoam2.infrastructure.logging import foamLogger
-from six import print_
 
 import sys
 
-from six import PY3
 
 class LineReader(object):
     """Read a line from a file
@@ -48,14 +46,13 @@ class LineReader(object):
 
         try:
             self.line=fh.readline()
-            if PY3:
-                if type(self.line) is bytes:
-                    self.line=self.line.decode()
+            if type(self.line) is bytes:
+                self.line=self.line.decode()
             self.bytes+=len(self.line)
         except KeyboardInterrupt:
             e = sys.exc_info()[1]
             foamLogger().warning("Keyboard Interrupt")
-            print_(" Interrupted by the Keyboard")
+            print(" Interrupted by the Keyboard")
             self.wasInterupted=True
             self.keyboardInterupted=True
             self.goOn=False
@@ -76,5 +73,3 @@ class LineReader(object):
     def read(self, fh):
         return self.read_and_interrupt(fh)[0]
 
-
-# Should work with Python3 and Python2

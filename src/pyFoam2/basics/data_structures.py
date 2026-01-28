@@ -1,23 +1,23 @@
 """Data structures in Foam-Files that can't be directly represented by Python-Structures"""
 
-from __future__ import division
-
 from copy import deepcopy
 import math
 import re
 
 # import FoamFileGenerator in the end to avoid circular dependencies
 
-from six import integer_types,PY3,string_types,StringIO
+from io import StringIO, BytesIO
 
-if PY3:
-    def cmp(a,b):
-        if a<b:
-            return -1
-        elif a==b:
-            return 0
-        else:
-            return 1
+integer_types = (int,)
+string_types = (str,)
+
+def cmp(a,b):
+    if a<b:
+        return -1
+    elif a==b:
+        return 0
+    else:
+        return 1
 
 class FoamDataType(object):
     def __repr__(self):
@@ -550,15 +550,9 @@ class DictProxy(dict):
         result+="}"
         return result
 
-    def iteritems(self):
-        lst=[]
-        for k in self:
-            lst.append((k,self[k]))
-        return lst
-
-    # needed for python 3. Should be a generator, but ...
     def items(self):
-        return self.iteritems()
+        for k in self:
+            yield (k,self[k])
 
     def addDecoration(self,key,text):
         if key in self:
@@ -614,8 +608,7 @@ class Unparsed(object):
                                 regexp,
                                 dtypes)
         except TypeError:
-            from six import BytesIO,b
-            return np.fromregex(BytesIO(b(self.data)),
+            return np.fromregex(BytesIO(self.data.encode()),
                                 regexp,
                                 dtypes)
 
@@ -657,8 +650,7 @@ class UnparsedList(object):
                                 regexp,
                                 dtypes)
         except TypeError:
-            from six import BytesIO,b
-            return np.fromregex(BytesIO(b(self.data)),
+            return np.fromregex(BytesIO(self.data.encode()),
                                 regexp,
                                 dtypes)
 
@@ -677,5 +669,3 @@ def makePrimitiveString(val):
 
 # Moved to the end to avoid circular dependencies
 import pyFoam2.basics.foam_file_generator
-
-# Should work with Python3 and Python2

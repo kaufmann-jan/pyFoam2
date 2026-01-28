@@ -13,7 +13,6 @@ from pyFoam2.basics.line_reader import LineReader
 
 from pyFoam2.error import warning,error
 
-from six import PY3
 
 class FileBasis(Utilities):
     """ Base class for the other OpenFOAM--file-classes"""
@@ -103,9 +102,9 @@ class FileBasis(Utilities):
         """ read the whole File into memory"""
         self.openFile()
         txt=self.fh.read()
-        if PY3 and self.zipped:
+        if self.zipped:
             txt=str(txt,"utf-8")
-        elif PY3 and self.useBinary:
+        elif self.useBinary:
             txt=str(txt,encoding="latin-1")
         self.content=self.parse(txt)
         self.closeFile()
@@ -119,7 +118,7 @@ class FileBasis(Utilities):
             if self.content!=None:
                 self.openFile(keepContent=True,mode="w")
                 txt=str(self)
-                if bytes!=str and self.useBinary:
+                if self.useBinary:
                     txt=bytes(txt,"utf-8")
                 self.fh.write(self.encode(txt))
                 self.closeFile()
@@ -128,7 +127,7 @@ class FileBasis(Utilities):
 
     def encode(self,txt):
         """Encode a string to byte if necessary (for Python3)"""
-        if PY3 and self.zipped and isinstance(txt,(str,)):
+        if self.zipped and isinstance(txt,(str,)):
             return bytes(txt,"utf-8")
         else:
             return txt
@@ -194,9 +193,8 @@ class FileBasis(Utilities):
 
     def writeEncoded(self,out,txt):
         """Convert the text to 'bytes' is we encounter a zipped file"""
-        if PY3:
-            if type(out) is gzip.GzipFile:
-                txt=bytes(txt,"utf-8")
+        if type(out) is gzip.GzipFile:
+            txt=bytes(txt,"utf-8")
         out.write(txt)
 
     def goTo(self,l,s,out=None,echoLast=False,stop=None):
@@ -363,5 +361,3 @@ class FileBasisBackup(FileBasis):
 def exists(name):
     f = FileBasis(name)
     return f.exists
-
-# Should work with Python3 and Python2

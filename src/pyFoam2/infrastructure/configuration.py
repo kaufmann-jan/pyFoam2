@@ -2,9 +2,7 @@
 
 Also hardcodes defaults for the settings"""
 
-from six import iteritems,moves,PY3
-
-configparser = moves.configparser
+import configparser
 
 from pyFoam2.infrastructure.hardcoded import globalConfigFile,userConfigFile,globalDirectory,userDirectory,globalConfigDir,userConfigDir,pyFoamSiteVar,siteConfigDir,siteConfigFile
 
@@ -491,9 +489,9 @@ class Configuration(configparser.ConfigParser):
         """Constructs the ConfigParser and fills it with the hardcoded defaults"""
         configparser.ConfigParser.__init__(self)
 
-        for section,content in iteritems(_defaults):
+        for section,content in _defaults.items():
             self.add_section(section)
-            for key,value in iteritems(content):
+            for key,value in content.items():
                 if isinstance(value,(dict,list)):
                     import pprint
                     self.set(section,key,pprint.pformat(value,indent=2))
@@ -514,7 +512,7 @@ class Configuration(configparser.ConfigParser):
             except KeyError:
                 self.validSections[name]=[s]
 
-        for name,sections in iteritems(self.validSections):
+        for name,sections in self.validSections.items():
             if not name in sections:
                 print("Invalid configuration for",name,"there is no default section for it in",sections)
 
@@ -730,5 +728,3 @@ class Configuration(configparser.ConfigParser):
         """Gets a debug switch"""
 
         return self.getboolean("Debug",name,default=False)
-
-# Should work with Python3 and Python2

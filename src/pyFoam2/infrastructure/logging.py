@@ -1,13 +1,12 @@
 """Writes Logfiles"""
 
-from six import print_
 
 try:
     import logging
     hasLogging=True
 except ImportError:
     # For Python-versions < 2.3
-    print_("Warning: old python-version. No logging-support")
+    print("Warning: No logging-support")
     hasLogging=False
 
 from pyFoam2.infrastructure.hardcoded import assertDirectory,logDirectory
@@ -31,7 +30,7 @@ def _getLoggingLevel(name):
     try:
         value=getattr(logging,level)
     except AttributeError:
-        print_("WARNING: Wrong specification of debug level "+level+" for log "+name)
+        print("WARNING: Wrong specification of debug level "+level+" for log "+name)
 
     return value
 
@@ -64,5 +63,3 @@ def foamLogger(name="general"):
         _definedLoggers.append(name)
 
     return log
-
-# Should work with Python3 and Python2

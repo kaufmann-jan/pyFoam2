@@ -1,7 +1,6 @@
 """Hardcoded values"""
 
 from os import path,makedirs,environ
-from six import PY3
 
 _pyFoamDirName="pyFoam"
 
@@ -81,18 +80,10 @@ def assertDirectory(name,dirMode=None):
     if path.exists(name):
         return
     else:
-        if PY3:
-            perm=eval("0o755")
-        else:
-            perm=eval("0755")
+        perm=0o755
 
         makedirs(name,mode=perm)
     if dirMode is not None:
-        if PY3:
-            perm=eval("0o"+dirMode)
-        else:
-            perm=eval("0"+dirMode)
+        perm=int(dirMode,8)
         from os import chmod
         chmod(name,perm)
-
-# Should work with Python3 and Python2

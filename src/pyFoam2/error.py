@@ -4,7 +4,6 @@ import traceback
 import sys
 
 from pyFoam2.basics.terminal_formatter import TerminalFormatter
-from six import print_
 
 defaultFormat=TerminalFormatter()
 defaultFormat.getConfigFormat("error")
@@ -37,13 +36,13 @@ def __common(format,standard,*text):
     isTerm=isatty(sys.stderr)
 
     if format and isTerm:
-         print_(format, end=' ', file=sys.stderr)
-    print_("PyFoam",standard.upper(),"on line",info[1],"of file",info[0],":", end=' ', file=sys.stderr)
+         print(format, end=' ', file=sys.stderr)
+    print("PyFoam",standard.upper(),"on line",info[1],"of file",info[0],":", end=' ', file=sys.stderr)
     for t in text:
-         print_(t, end=' ', file=sys.stderr)
+         print(t, end=' ', file=sys.stderr)
 
     if isTerm:
-        print_(defaultFormat.reset, file=sys.stderr)
+        print(defaultFormat.reset, file=sys.stderr)
 
 def warning(*text):
     """Prints a warning message with the occuring line number
@@ -90,7 +89,7 @@ class FatalErrorPyFoamException(PyFoamException):
      def __init__(self, *text, **kwargs):
           # Up reports how many levels of the stack-trace should be
           # discarded. 2 usually is the place where the exception was raised
-          up = kwargs.get("up", 2) # necessary because a up=2 in the definition does not work in python 2
+          up = kwargs.get("up", 2)
 
           info=getLine(up=up)
           descr="PyFoam FATAL ERROR on line %d of file %s:" % (info[1],info[0])
@@ -99,5 +98,3 @@ class FatalErrorPyFoamException(PyFoamException):
 
      def __str__(self):
           return "FatalError in PyFoam: '"+self.descr+"'"
-
-# Should work with Python3 and Python2

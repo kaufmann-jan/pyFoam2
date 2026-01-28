@@ -3,7 +3,6 @@
 implementation
 http://code.activestate.com/recipes/578797-public-key-encryption-rsa/"""
 
-from __future__ import division, absolute_import
 from base64 import b32encode,b32decode
 try:
     from fractions import gcd
@@ -16,11 +15,7 @@ from binascii import hexlify, unhexlify
 import binascii
 import sys
 
-from six import print_,PY3,binary_type,u
-if PY3:
-    range_func = range
-else:
-    range_func = xrange
+range_func = range
 
 from pyFoam2.infrastructure.hardcoded import authDirectory,assertDirectory
 from pyFoam2.foam_information import getUserName
@@ -39,10 +34,7 @@ def myAuthenticatedKeysFile():
 def ensureKeyPair():
     from os import chmod
     assertDirectory(authDirectory(),dirMode="700")
-    if PY3:
-        perm=eval("0o700")
-    else:
-        perm=eval("0700")
+    perm=0o700
 
     if not path.exists(myPrivateKeyFile()) and not path.exists(myPublicKeyFile()):
         warning("No key pair in",authDirectory()," .... Creating")
@@ -165,7 +157,7 @@ def encode(msg, pubkey, verbose=False):
     chunksize = int(log(pubkey.modulus, 256))
     outchunk = chunksize + 1
     outfmt = '%%0%dx' % (outchunk * 2,)
-    bmsg = msg if isinstance(msg, binary_type) else msg.encode('utf-8')
+    bmsg = msg if isinstance(msg, bytes) else msg.encode('utf-8')
     result = []
     for start in range_func(0, len(bmsg), chunksize):
         chunk = bmsg[start:start + chunksize]
@@ -174,7 +166,7 @@ def encode(msg, pubkey, verbose=False):
         coded = pow(plain, *pubkey)
         bcoded = unhexlify((outfmt % coded).encode())
         if verbose:
-            print_('Encode:', chunksize, chunk, plain, coded, bcoded)
+            print('Encode:', chunksize, chunk, plain, coded, bcoded)
         result.append(bcoded)
     return b''.join(result)
 
@@ -191,11 +183,11 @@ def decode(bcipher, privkey, verbose=False):
             plain = pow(coded, *privkey)
             chunk = unhexlify((outfmt % plain).encode())
             if verbose:
-                print_('Decode:', chunksize, chunk, plain, coded, bcoded)
+                print('Decode:', chunksize, chunk, plain, coded, bcoded)
             result.append(chunk)
         return b''.join(result).rstrip(b'\x00').decode('utf-8')
     except (UnicodeDecodeError,binascii.Error,TypeError) as e:
-        return u(b'Failed decode for'+bcipher)
+        return ("Failed decode for " + bcipher.decode('utf-8', errors='replace'))
 
 def key_to_str(key):
     """
@@ -253,9 +245,9 @@ if __name__ == '__main__':
     priv=myPrivateKey()
     msg = u'the quick brown fox jumped over the lazy dog ® ⌀'
     challenge=createChallengeString(msg)
-    print_("Challenge:",challenge)
-    print_("Checking:",checkChallenge(challenge,myPublicKey()))
+    print("Challenge:",challenge)
+    print("Checking:",checkChallenge(challenge,myPublicKey()))
     pubkey, privkey = keygen(2 ** 64)
-    print_("Checking False:",False==checkChallenge(challenge,pubkey))
-    print_("Checking MyUsername:",checkAuthentication(getUserName(),challenge))
-    print_("Checking user 'test':",checkAuthentication("test",challenge))
+    print("Checking False:",False==checkChallenge(challenge,pubkey))
+    print("Checking MyUsername:",checkAuthentication(getUserName(),challenge))
+    print("Checking user 'test':",checkAuthentication("test",challenge))

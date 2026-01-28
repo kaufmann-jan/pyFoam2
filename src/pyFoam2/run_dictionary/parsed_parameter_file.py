@@ -13,7 +13,8 @@ from os import path
 from copy import deepcopy
 import sys
 
-from six import print_,integer_types,iteritems,string_types
+integer_types = (int,)
+string_types = (str,)
 
 
 def _openfoam_header():
@@ -125,7 +126,7 @@ class ParsedParameterFile(FileBasisBackup):
                                   dictStack=self.dictStack,
                                   doMacroExpansion=self.doMacros)
         except BinaryParserError:
-            e = sys.exc_info()[1] # Needed because python 2.5 does not support 'as e'
+            e = sys.exc_info()[1]
             if not self.treatBinaryAsASCII:
                 # Retrying in ASCII-mode although the file thinks it is binary
                 parser=FoamFileParser(content,
@@ -393,18 +394,18 @@ class FoamFileParser(PlyParser):
 
     def printContext(self,c,ind):
         """Prints the context of the current index"""
-        print_("------")
-        print_(c[max(0,ind-100):max(0,ind-1)])
-        print_("------")
-        print_(">",c[ind-1],"<")
-        print_("------")
-        print_(c[min(len(c),ind):min(len(c),ind+100)])
-        print_("------")
+        print("------")
+        print(c[max(0,ind-100):max(0,ind-1)])
+        print("------")
+        print(">",c[ind-1],"<")
+        print("------")
+        print(c[min(len(c),ind):min(len(c),ind+100)])
+        print("------")
 
     def parserError(self,text,c,ind):
         """Prints the error message of the parser and exit"""
-        print_("PARSER ERROR:",text)
-        print_("On index",ind)
+        print("PARSER ERROR:",text)
+        print("On index",ind)
         self.printContext(c,ind)
         raise PyFoamParserError("Unspecified")
 
@@ -506,7 +507,7 @@ class FoamFileParser(PlyParser):
     t_unparsed_ignore = ' \t\n0123456789.-+e'
 
     def t_unparsed_error(self,t):
-        print_("Error unparsed",t.lexer.lexdata[t.lexer.lexpos])
+        print("Error unparsed",t.lexer.lexdata[t.lexer.lexpos])
         t.lexer.skip(1)
 
     t_binaryblob_ignore = ''
@@ -536,7 +537,7 @@ class FoamFileParser(PlyParser):
         pass
 
     def t_binaryblob_error(self,t):
-        print_("Error binaryblob",t.lexer.lexdata[t.lexer.lexpos])
+        print("Error binaryblob",t.lexer.lexdata[t.lexer.lexpos])
         t.lexer.skip(1)
 
     def t_codestream_end(self,t):
@@ -556,7 +557,7 @@ class FoamFileParser(PlyParser):
 
     def t_codestream_error(self,t):
         if t.lexer.lexdata[t.lexer.lexpos]!='#':
-            print_("Error Codestream",t.lexer.lexdata[t.lexer.lexpos])
+            print("Error Codestream",t.lexer.lexdata[t.lexer.lexpos])
         t.lexer.skip(1)
 
     def t_NAME(self,t):
@@ -643,7 +644,7 @@ class FoamFileParser(PlyParser):
         return t
 
     def t_ignorerestofline_error(self,t):
-        print_("Error Reading rest of line",t.lexer.lexdata[t.lexer.lexpos])
+        print("Error Reading rest of line",t.lexer.lexdata[t.lexer.lexpos])
         t.lexer.skip(1)
 
     # C++ comment (ignore)
@@ -679,7 +680,7 @@ class FoamFileParser(PlyParser):
 
     def t_mlcomment_error(self,t):
         if t.lexer.lexdata[t.lexer.lexpos]!="*":
-            print_("Error comment",t.lexer.lexdata[t.lexer.lexpos])
+            print("Error comment",t.lexer.lexdata[t.lexer.lexpos])
         t.lexer.skip(1)
 
     # Error handling rule
@@ -1382,7 +1383,7 @@ class ParsedBoundaryDict(ParsedParameterFile):
     def __str__(self):
         string=_openfoam_header()
         temp=[]
-        for k,v in iteritems(self.content):
+        for k,v in self.content.items():
             temp.append((k,v))
 
         temp.sort(key=lambda x:int(x[1]["startFace"]))
@@ -1412,5 +1413,3 @@ class ParsedFileHeader(ParsedParameterFile):
 
     def __len__(self):
         return len(self.header)
-
-# Should work with Python3 and Python2

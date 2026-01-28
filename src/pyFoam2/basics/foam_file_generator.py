@@ -3,8 +3,10 @@
 from pyFoam2.error import error,PyFoamException
 from pyFoam2.basics.data_structures import Vector,Field,Dimension,TupleProxy,DictProxy,Tensor,SymmTensor,Unparsed,UnparsedList,Codestream,DictRedirection,BinaryList,BoolProxy
 
-from six import string_types,integer_types
 from collections import OrderedDict
+
+string_types = (str,)
+integer_types = (int,)
 
 class FoamFileGenerator(object):
     """Class that generates a OpenFOAM-compatible representation of a
@@ -328,5 +330,3 @@ def makeString(data):
 class FoamFileGeneratorError(PyFoamException):
     def __init__(self,descr):
         PyFoamException.__init__(self,descr)
-
-# Should work with Python3 and Python2

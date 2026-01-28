@@ -2,11 +2,7 @@
 
 from os import environ,path,listdir
 import sys
-
-if sys.version_info<(2,6):
-    from popen2 import popen4
-else:
-    from subprocess import Popen,PIPE,STDOUT
+from subprocess import Popen,PIPE,STDOUT
 
 import re
 
@@ -389,17 +385,12 @@ def injectVariables(script,
             postCmd+=" WM_COMPILER="+wmCompiler
         cmd+=" . "+script+postCmd+'; echo "Starting The Dump Of Variables"; export'
     except KeyError:
-        # Instead of 'KeyError as name'. This is compatible with 2.4-3.2
-        # http://docs.pythonsprints.com/python3_porting/py-porting.html#handling-exceptions
         name = sys.exc_info()[1]
         error("Can't do it, because shell variable",name,"is undefined")
 
-    if sys.version_info<(2,6):
-        raus,rein = popen4(cmd)
-    else:
-        p = Popen("bash -c '"+cmd+"'", shell=True,
-                  stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
-        (rein,raus)=(p.stdin,p.stdout)
+    p = Popen("bash -c '"+cmd+"'", shell=True,
+              stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+    (rein,raus)=(p.stdin,p.stdout)
     lines=[l.strip().decode() for l in raus.readlines()]
     rein.close()
     raus.close()
@@ -449,5 +440,3 @@ def getUserTempDir():
         except OSError:
             tempDir=tempfile.gettempdir()
     return tempDir
-
-# Should work with Python3 and Python2
