@@ -80,7 +80,11 @@ _defaults={
         "DebuggerCall_Darwin":"lldb -o run -k bt -- {exe} {args}"
     },
     "CaseBuilder":{
-        "descriptionPath": eval('["'+path.curdir+'","'+path.join(userDirectory(),"caseBuilderDescriptions")+'","'+path.join(globalDirectory(),"caseBuilderDescriptions")+'"]'),
+        "descriptionPath": [
+            path.curdir,
+            path.join(userDirectory(), "caseBuilderDescriptions"),
+            path.join(globalDirectory(), "caseBuilderDescriptions"),
+        ],
     },
     "Formats":{
         "error"       : "bold,red,standout",
