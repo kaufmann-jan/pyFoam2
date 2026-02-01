@@ -1,11 +1,17 @@
 """Formats the output on a terminal"""
 
 import os
+import shutil
+import sys
 
 from pyFoam2.infrastructure.configuration import Configuration as config
 
 def getTerminalCode(code):
     result=""
+    if sys.platform.startswith("win"):
+        return result
+    if shutil.which("tput") is None:
+        return result
     try:
         result=os.popen("tput "+code).read()
     except:
