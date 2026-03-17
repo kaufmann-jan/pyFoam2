@@ -44,6 +44,10 @@ class FoamFileGenerator(object):
         if isinstance(value, np.ndarray):
             if value.ndim == 0:
                 return value.item()
+            # Preserve list semantics for string arrays so a 1-element array
+            # still serializes as "(value)" instead of collapsing to "value".
+            if value.dtype.kind in ("U", "S"):
+                return value.tolist()
             if value.size == 1:
                 return value.reshape(-1)[0].item()
             return value.tolist()
