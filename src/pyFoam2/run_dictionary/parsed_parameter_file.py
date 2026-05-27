@@ -12,6 +12,7 @@ from pyFoam2.foam_information import foamVersionString
 from os import path
 from copy import deepcopy
 import sys
+import re
 
 integer_types = (int,)
 string_types = (str,)
@@ -78,6 +79,10 @@ def _is_boundary_content(content):
     if len(content) == 0:
         return False
     return all(_is_boundary_entry(value) for value in content.values())
+
+
+def _is_boundary_dict_text(content):
+    return re.search(r"\bclass\s+polyBoundaryMesh\s*;", content) is not None
 
 class ParsedParameterFile(FileBasisBackup):
     """ Parameterfile whose complete representation is read into
@@ -156,11 +161,14 @@ class ParsedParameterFile(FileBasisBackup):
 
     def parse(self,content):
         """Constructs a representation of the file"""
+        boundary_dict = self.boundaryDict or _is_boundary_dict_text(content)
+        if boundary_dict:
+            self.boundaryDict = True
         try:
             parser=FoamFileParser(content,
                                   debug=self.debug,
                                   fName=self.name,
-                                  boundaryDict=self.boundaryDict,
+                                  boundaryDict=boundary_dict,
                                   listDict=self.listDict,
                                   listDictWithHeader=self.listDictWithHeader,
                                   listLengthUnparsed=self.listLengthUnparsed,
@@ -179,7 +187,7 @@ class ParsedParameterFile(FileBasisBackup):
                 parser=FoamFileParser(content,
                                       debug=self.debug,
                                       fName=self.name,
-                                      boundaryDict=self.boundaryDict,
+                                      boundaryDict=boundary_dict,
                                       listDict=self.listDict,
                                       listDictWithHeader=self.listDictWithHeader,
                                       listLengthUnparsed=self.listLengthUnparsed,
