@@ -32,6 +32,53 @@ def _openfoam_header():
         "\\*---------------------------------------------------------------------------*/\n\n"
     )
 
+
+def _make_boundary_string(content, header):
+    string = _openfoam_header()
+    temp = []
+    if isinstance(content, list):
+        for idx in range(0, len(content), 2):
+            temp.append((content[idx], content[idx + 1]))
+    else:
+        for key, value in content.items():
+            temp.append((key, value))
+
+    temp.sort(key=lambda item: int(item[1]["startFace"]))
+
+    flattened = []
+    for key, value in temp:
+        flattened.append(key)
+        flattened.append(value)
+
+    generator = FoamFileGenerator(flattened, header=header)
+    string += str(generator)
+
+    return string
+
+
+def _is_boundary_entry(value):
+    if not isinstance(value, (dict, DictProxy)):
+        return False
+    required = {"type", "nFaces", "startFace"}
+    return required.issubset(set(value.keys()))
+
+
+def _is_boundary_content(content):
+    if isinstance(content, list):
+        if len(content) == 0 or len(content) % 2 != 0:
+            return False
+        for idx in range(0, len(content), 2):
+            if not isinstance(content[idx], str):
+                return False
+            if not _is_boundary_entry(content[idx + 1]):
+                return False
+        return True
+    if not isinstance(content, (dict, DictProxy)):
+        return False
+    if len(content) == 0:
+        return False
+    return all(_is_boundary_entry(value) for value in content.values())
+
 class ParsedParameterFile(FileBasisBackup):
     """ Parameterfile whose complete representation is read into
     memory, can be manipulated and afterwards written to disk.
@@ -205,10 +252,12 @@ class WriteParameterFile(ParsedParameterFile):
                  className="dictionary",
                  objectName=None,
                  createZipped=False,
+                 boundaryDict=False,
                  **kwargs):
         ParsedParameterFile.__init__(self,
                                      name,
                                      backup=backup,
+                                     boundaryDict=boundaryDict,
                                      dontRead=True,
                                      createZipped=createZipped,
                                      **kwargs)
@@ -221,6 +270,18 @@ class WriteParameterFile(ParsedParameterFile):
                      "format":"ascii",
                      "class":className,
                      "object":objectName}
+
+    def __str__(self):
+        is_boundary = (
+            self.boundaryDict
+            or self.header.get("class") == "polyBoundaryMesh"
+            or _is_boundary_content(self.content)
+        )
+        if is_boundary:
+            header = dict(self.header)
+            header["class"] = "polyBoundaryMesh"
+            return _make_boundary_string(self.content, header)
+        return ParsedParameterFile.__str__(self)
 
 class Enumerate(object):
     def __init__(self, names):
@@ -1381,23 +1442,7 @@ class ParsedBoundaryDict(ParsedParameterFile):
         return self.content
 
     def __str__(self):
-        string=_openfoam_header()
-        temp=[]
-        for k,v in self.content.items():
-            temp.append((k,v))
-
-        temp.sort(key=lambda x:int(x[1]["startFace"]))
-
-        temp2=[]
-
-        for b in temp:
-            temp2.append(b[0])
-            temp2.append(b[1])
-
-        generator=FoamFileGenerator(temp2,header=self.header)
-        string+=str(generator)
-
-        return string
+        return _make_boundary_string(self.content, self.header)
 
 class ParsedFileHeader(ParsedParameterFile):
     """Only parse the header of a file"""
