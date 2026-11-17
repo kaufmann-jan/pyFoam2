@@ -102,7 +102,7 @@ class ParsedParameterFile(FileBasisBackup):
                  listDictWithHeader=False,
                  listLengthUnparsed=None,
                  preserveComments=True,
-                 noHeader=False,
+                 noHeader=None,
                  binaryMode=False,
                  treatBinaryAsASCII=False,
                  noBody=False,
@@ -122,7 +122,7 @@ class ParsedParameterFile(FileBasisBackup):
         the settings in the header).
         :param treatBinaryAsASCII: even if the header says that this is a
         binary file treat it like an ASCII-file
-        :param noHeader: don't expect a header
+        :param noHeader: don't expect a header; None detects it automatically
         :param noBody: don't read the body of the file (only the header)
         :param doMacroExpansion: expand #include and $var
         :param noVectorOrTensor: short lists of length 3, 6 an 9 are NOT
@@ -161,6 +161,13 @@ class ParsedParameterFile(FileBasisBackup):
 
     def parse(self,content):
         """Constructs a representation of the file"""
+        if self.noHeader is None:
+            if self.noBody or self.boundaryDict or self.listDict or self.listDictWithHeader:
+                self.noHeader = False
+            else:
+                leading_comments = r'\A(?:\s+|//[^\n]*(?:\n|$)|/\*[\s\S]*?\*/)*'
+                body = re.sub(leading_comments, '', content, count=1)
+                self.noHeader = re.match(r'FoamFile\s*\{', body) is None
         boundary_dict = self.boundaryDict or _is_boundary_dict_text(content)
         if boundary_dict:
             self.boundaryDict = True
